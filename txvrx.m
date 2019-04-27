@@ -6,6 +6,12 @@ rxfile = fread(f2, 'float32');
 % close the file
 fclose(f2);
 
+f1 = fopen('tx2.dat', 'rb');
+txfile = fread(f1, 'float32');
+fclose(f1);
+x = txfile;
+
+
 y = zeros(length(rxfile)/2,1);
 y = rxfile(1:2:end)+j*rxfile(2:2:end);
 y = y(250:end);
@@ -27,28 +33,57 @@ for z = 1:2:length(y)
     end
 end
 
+ends = -1;
+runningsum = zeros(1, 100);
+for z = length(y):-2:start
+     runningsum(mod((z-1)/2, 10) + 1) = abs(y(z));
+    if (sum(runningsum)/length(runningsum)) > maxreal*3
+        ends = z + length(runningsum)
+        break
+    end
+end
 
-f1 = fopen('tx2.dat', 'rb');
-txfile = fread(f1, 'float32');
-fclose(f1);
-x = txfile;
+start_constant = 0; % 200000;
+end_constant = 0; %200000;
+y = y((start - start_constant):(ends+ end_constant));
 
 
+x = x(200000:(length(x)-200000));
+
+size_corr = 1000;
+C = xcorr((y(1:size_corr)), (x(1:size_corr)));
+
+
+
+% take FFT of square?
+% negative offset of radians?
+%
 
 subplot(3,2,1);
-title("realy");
-stem(real(y(z:2:end)));
+
+stem(real(y(2:2:end)));
+title('realy');
+ylabel('realy');
 subplot(3,2,2);
-title("imagy");
-stem(imag(y((z-1):2:end)));
+
+stem(imag(y(1:2:end)));
+title('imagy');
 subplot(3, 2, 3);
-title("realx");
+
 stem(imag(x));
+title('imagx');
+
 subplot(3, 2, 4);
-title("imagx");
+
 stem(real(x));
+title('realx');
+
 subplot(3, 2, 5);
 
-C = xcorr(y(1:2:end), x(1:2:end));
-plot((C)/max(C));
-ylabel('Correlation');
+
+plot(abs((C)/max(C)));
+title('Correlation');
+
+%Send small noise-like data
+%Recive it
+%cross correlate it 
