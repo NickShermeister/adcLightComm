@@ -8,6 +8,8 @@ rxfile = fread(f2, 'float32');
 % close the file
 fclose(f2);
 
+symbol_period = 20;
+
 f1 = fopen('tx2.dat', 'rb');
 txfile = fread(f1, 'float32');
 fclose(f1);
@@ -91,6 +93,21 @@ stem((ximag));
 title('imagx');
 
 subplot(3, 2, 5);
+fastforT = abs(fft(y.^2));
+x_axis = linspace(0, 2*pi*(length(y)-1)/length(y), length(y)); %Unclear why we want this.
+
+[max_val, max_index] = max(fastforT);
+
+freq_offset = -1*x_axis(max_index)./2; %Why divided by 2? ( Prob because we raised to two -Paige)
+
+theta_hat = -1*angle(fastforT(max_index))./2; %still 2
+
+for k = 1:length(y)
+   x_hat(k) = y(k).*exp(1i*(freq_offset * (k-1) + theta_hat)); 
+end
+
+plot(x_hat(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
+title('half1');
 
 
 % plot(abs((C)/max(C)));
@@ -99,20 +116,10 @@ subplot(3, 2, 5);
 
 subplot(3,2,6);
 
-fastforT = abs(fft(y.^2));
-x_axis = linspace(0, 2*pi*(length(y)-1)/length(y), length(y)); %Unclear why we want this.
 
-[max_val, max_index] = max(fastforT);
-
-freq_offset = -1*x_axis(max_index)./2; %Why divided by 2? Prob because we raised to two
-
-theta_hat = -1*angle(fastforT(max_index))./2; %still 2
-
-for k = 1:length(y)
-   x_hat(k) = y(k).*exp(1i*(freq_offset * (k-1) + theta_hat)); 
-end
-
-plot(x_hat, '.') %Probably clipping, need to check amplitude
+% plot(x_hat, '.')
+% Every 20 to measure in the middle of a pulse
+% beginning != end
 %Send small noise-like data
 %Recive it
 %cross correlate it 

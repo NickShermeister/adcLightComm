@@ -1,6 +1,8 @@
 % Open the file containing the received samples
 f2 = fopen('rx.dat', 'rb');
 
+rx_samples_to_file ??freq 2478e6 ??rate 2e6 ??type float ??gain 20 ??file rx.dat
+
 % read data from the file
 tmp = fread(f2, 'float32');
 
