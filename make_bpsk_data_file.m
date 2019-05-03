@@ -1,4 +1,5 @@
 % tx_samples_from_file --freq 250e3 --rate 200e3 --type float --gain 70 --file tx2.dat
+%Lower receiver gain to like 20.
 
 N = 10000;
 % make 100 random bits of values +- 1
