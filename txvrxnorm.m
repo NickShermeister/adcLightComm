@@ -3,69 +3,97 @@
 clear;
 clf;
 % Open the file containing the received samples
-f2 = fopen('rxq.dat', 'rb');
+f2 = fopen('rx.dat', 'rb');
 % read data from the file
 rxfile = fread(f2, 'float32');
 % close the file
 fclose(f2);
 
-%Assign y to be the data, ignoring the first 250 values due to weird noise.
-y = zeros(length(rxfile)/2,1);
-y = rxfile(1:2:end)+1i*rxfile(2:2:end);
-y = y(250:end);
+symbol_period = 20;
 
-%open file and assign real/imag parts
-f1 = fopen('txq.dat', 'rb');
+f1 = fopen('tx2.dat', 'rb');
 txfile = fread(f1, 'float32');
 fclose(f1);
 txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
 
-%Set the symbol period
-symbol_period = 20;
+
+y = zeros(length(rxfile)/2,1);
+y = rxfile(1:2:end)+j*rxfile(2:2:end);
+y = y(250:end);
 
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
 
-y = movingAvg(y);
+%basic filtering
+tempreal = y(1:2:200);
+tempimag = y(2:2:200);
 
-%Hard set: change the tx data based on the known constants in the file
-%making the tx data.
+maxreal = max(abs(tempreal));
+maximag = max(tempimag);
+
+start_constant = 0; % 200000;
+end_constant = 0; %200000;
+
+start = -1;
+runningsum = zeros(1, 500);
+for z = 1:2:length(y)
+    runningsum(mod((z-1)/2, 500) + 1) = abs(y(z));
+    if (sum(runningsum)/length(runningsum)) > maxreal*3
+       start = z - length(runningsum)
+       break
+    end
+end
+
+ends = length(y) - end_constant;
+runningsum = zeros(1, 100);
+for z = length(y):-2:150
+%     abs(y(z))
+    runningsum(mod(round((z-1)/2), 100) + 1) = abs(y(z));
+    if (sum(runningsum)/length(runningsum)) > maxreal*3
+        ends = z + length(runningsum)
+        break
+    end
+end
+
+y = y((start - start_constant):(ends+ end_constant));
+
 xreal = xreal(100000:(length(xreal)-100000));
 ximag = ximag(100000:(length(ximag)-100000));
 
 % take FFT of square?
 % negative offset of radians?
+%
 
-%Plot the received and transmitted data
 subplot(3,2,1);
+
 stem(real(y(1:2:end)));
-title('Real portion of received Data');
+title('realy');
 ylabel('realy');
+
 
 subplot(3,2,2);
 stem(imag(y(2:2:end)));
-title('Imaginary portion of received Data');
+title('imagy');
 
 subplot(3, 2, 3);
 stem(real(xreal));
-title('Real portion of transmitted Data');
+title('realx');
 
 subplot(3, 2, 4);
 stem((ximag));
-title('Imaginary portion of transmitted Data');
+title('imagx');
 
-
-
-%normalize y
+subplot(3, 2, 5);
 temp_max = max(abs(y));
 y = y./temp_max;
 
-%Divide the data in half because of the noisiness and because the clocks
-%will drift over time.
+
 y1 = y(1:round(length(y)/2));
+% y1 = y;
 y2 = y(round(length(y)/2):end);
+% y2 = y;
 
 fastforT1 = abs(fft(y1.^4));
 x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why we want this.
@@ -80,7 +108,6 @@ for k = 1:length(y1)
    x_hat1(k) = y1(k).*exp(1i*(freq_offset1 * (k-1) + theta_hat1)); 
 end
 
-subplot(3, 2, 5);
 plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
 title('half1');
 
@@ -103,59 +130,26 @@ plot(x_hat2(round(symbol_period/2) + mod(length(y1), symbol_period):symbol_perio
 title('half2');
 
 y = round(y);
-y = y(498:(20020+497));
-complex = (ximag + 1i*xreal)/50;
+y = y(478:end);
+complex = (ximag + 1i*xreal);
 
+% y = y;
 
-y_sum1 = (y == -1i);
-y_sum2 = (y == +1i);
-y_sum3 = (y == 1);
-y_sum4 = (y == -1);
+y_sum1 = (y == 1);
+y_sum2 = (y == -1);
 % sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_total = y_sum1*1 + y_sum2*4 + y_sum3*3 + y_sum4 * 2;
+y_total = y_sum1*1 + y_sum2*2;
 
-x_sum2 = (complex == 1 + 1i);
-x_sum1 = (complex == 1 - 1i);
-x_sum3 = (complex == -1 - 1i);
-x_sum4 = (complex == -1 + 1i);
-x_total = x_sum1*1 + x_sum2*2 + x_sum3*3 + x_sum4*4;
+x_sum2 = (complex == 1 );
+x_sum1 = (complex == -1);
+x_total = x_sum1*1 + x_sum2*2;
 
 diffTest = (y_total((symbol_period/2):symbol_period:end) == x_total((symbol_period/2):symbol_period:end));
+diffTest = diffTest.
 accuracy = sum(diffTest/length(diffTest))
 
-% Every 20 to measure in the middle of a pulse 
+% Every 20 to measure in the middle of a pulse
+% beginning != end
 %Send small noise-like data
 %Recive it
 %cross correlate it 
-
-function z = movingAvg(y)
-    %basic filtering
-tempreal = y(1:2:200);
-tempimag = y(2:2:200);
-maxreal = max(abs(tempreal));
-maximag = max(tempimag);
-start_constant = 0; % 200000;
-end_constant = 0; %200000;
-start = -1;
-runningsum = zeros(1, 500);
-for z = 1:2:length(y)
-    runningsum(mod((z-1)/2, 500) + 1) = abs(y(z));
-    if (sum(runningsum)/length(runningsum)) > maxreal*3
-       start = z - length(runningsum)
-       break
-    end
-end
-
-ends = length(y) - end_constant;
-runningsum = zeros(1, 100);
-for z = length(y):-2:150
-%     abs(y(z))
-    runningsum(mod(round((z-1)/2), 100) + 1) = abs(y(z));
-    if (sum(runningsum)/length(runningsum)) > maxreal*3
-        ends = z + length(runningsum)
-        break
-    end
-end
-
-z = y((start - start_constant):(ends+ end_constant));
-end
