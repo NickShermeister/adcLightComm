@@ -57,19 +57,10 @@ for z = length(y):-2:150
     end
 end
 
-
 y = y((start - start_constant):(ends+ end_constant));
-
 
 xreal = xreal(100000:(length(xreal)-100000));
 ximag = ximag(100000:(length(ximag)-100000));
-
-% size_corr = 1000;
-% C = xcorr((y(1:size_corr)), (xreal(1:size_corr)));
-% [a, b] = max(C)
-
-
-
 
 % take FFT of square?
 % negative offset of radians?
@@ -87,18 +78,17 @@ stem(imag(y(2:2:end)));
 title('imagy');
 
 subplot(3, 2, 3);
-
 stem(real(xreal));
 title('realx');
 
-
-
 subplot(3, 2, 4);
-
 stem((ximag));
 title('imagx');
 
 subplot(3, 2, 5);
+temp_max = max(abs(y));
+y = y./temp_max;
+
 
 y1 = y(1:round(length(y)/2));
 % y1 = y;
@@ -122,12 +112,7 @@ plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, 
 title('half1');
 
 
-% plot(abs((C)/max(C)));
-% title('Correlation');
-
-
 subplot(3,2,6);
-
 fastforT2 = abs(fft(y2.^4));
 x_axis2 = linspace(0, 2*pi*(length(y2)-1)/length(y2), length(y2)); %Unclear why we want this.
 
@@ -144,8 +129,28 @@ end
 plot(x_hat2(round(symbol_period/2) + mod(length(y1), symbol_period):symbol_period:end), '.') %Probably clipping, need to check amplitude
 title('half2');
 
+y = round(y);
+y = y(498:(20020+497));
+complex = (ximag + 1i*xreal)/50;
 
-% plot(x_hat, '.')
+% y = y;
+
+y_sum1 = (y == -1i);
+y_sum2 = (y == +1i);
+y_sum3 = (y == 1);
+y_sum4 = (y == -1);
+% sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
+y_total = y_sum1*1 + y_sum2*4 + y_sum3*3 + y_sum4 * 2;
+
+x_sum1 = (complex == 1 - 1i);
+x_sum2 = (complex == 1 + 1i);
+x_sum3 = (complex == -1 - 1i);
+x_sum4 = (complex == -1 + 1i);
+x_total = x_sum1*1 + x_sum2*2 + x_sum3*3 + x_sum4*4;
+
+diffTest = (y_total(10:20:end) == x_total(10:20:end));
+accuracy = sum(diffTest/length(diffTest))
+
 % Every 20 to measure in the middle of a pulse
 % beginning != end
 %Send small noise-like data
