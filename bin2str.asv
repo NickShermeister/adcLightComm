@@ -1,0 +1,5 @@
+function str = bin2str(bin_vec,n)
+    if nargin<2
+        bin_ve
+    str = char(bin2dec(reshape(char(bin_vec+'0'), 8,[]).')');
+end

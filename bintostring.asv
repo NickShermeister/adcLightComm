@@ -1,0 +1,3 @@
+function str = bintostring(binvec)
+
+str = char(bin2dec(reshape(char(binvec+'0'), 8,[]).'))
