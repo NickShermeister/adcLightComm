@@ -5,11 +5,11 @@ N = 10000;
 % make 100 random bits of values +- 1
 % bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
 word = 'hello';
-book = fileread('householdtales.txt');
+read
 % bits = dec2bin(word', 7) - '0'
 % bits = reshape(bits, [35 , 1])
-message = str2bin(book(8500:10840))-0.5;
-bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end));
+message = str2bin(word)-0.5;
+bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end))
 
 Symbol_period = 20;
 
