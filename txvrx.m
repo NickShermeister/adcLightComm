@@ -22,12 +22,15 @@ txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
 
+
+
 %Set the symbol period
 symbol_period = 20;
 
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
 
+%Trim down the data to the relevent section
 y = movingAvg(y);
 
 %Hard set: change the tx data based on the known constants in the file
@@ -37,6 +40,9 @@ ximag = ximag(100000:(length(ximag)-100000));
 
 % take FFT of square?
 % negative offset of radians?
+
+trial = xcorr(real(y), xreal);
+max(trial)
 
 %Plot the received and transmitted data
 subplot(3,2,1);
@@ -100,7 +106,14 @@ plot(x_hat2(round(symbol_period/2) + mod(length(y1), symbol_period):symbol_perio
 title('half2');
 
 y = round(y);
-y = y(498:(20020+497));
+
+%Trim off zeros at the front and set y's length equal to the sent data's
+%length (possibly a bad presumption, but it should align technically)
+test_loc = 1;
+while(y(test_loc) == 0)
+   test_loc = test_loc + 1;
+end
+y = y((test_loc-1):(length(ximag) + test_loc + 1));
 complex = (1i*ximag + xreal)/50;
 
 
