@@ -64,7 +64,7 @@ tmp(1:2:end) = real(x_tx);
 tmp(2:2:end) = imag(x_tx);
 
 % open a file to write in binary format 
-f1 = fopen('tx2.dat', 'wb');
+f1 = fopen('txbook.dat', 'wb');
 % write the values as a float32
 fwrite(f1, tmp/100, 'float32');
 % close the file
