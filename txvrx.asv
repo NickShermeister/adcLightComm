@@ -104,7 +104,8 @@ title('half2');
 
 y = round(y);
 y = y(498:(20020+497));
-complex = (ximag + 1i*xreal)/50;
+complex = (1i*ximag + xreal)/50;
+
 
 
 y_sum1 = (y == -1i);
@@ -112,7 +113,7 @@ y_sum2 = (y == +1i);
 y_sum3 = (y == 1);
 y_sum4 = (y == -1);
 % sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_total = y_sum1*1 + y_sum2*4 + y_sum3*3 + y_sum4 * 2;
+y_total = y_sum1*3 + y_sum2*4 + y_sum3*3 + y_sum4 * 2;
 
 x_sum2 = (complex == 1 + 1i);
 x_sum1 = (complex == 1 - 1i);

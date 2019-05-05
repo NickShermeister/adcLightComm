@@ -69,11 +69,8 @@ y2 = y(round(length(y)/2):end);
 
 fastforT1 = abs(fft(y1.^4));
 x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why we want this.
-
 [max_val1, max_index1] = max(fastforT1);
-
 freq_offset1 = -1*x_axis1(max_index1)./4; %Why divided by 2? ( Prob because we raised to two -Paige)
-
 theta_hat1 = -1*angle(fastforT1(max_index1))./4; %still 2
 
 for k = 1:length(y1)
@@ -104,15 +101,16 @@ title('half2');
 
 y = round(y);
 y = y(498:(20020+497));
-complex = (ximag + 1i*xreal)/50;
+complex = (1i*ximag + xreal)/50;
 
 
+%HAND TUNE THESE
 y_sum1 = (y == -1i);
 y_sum2 = (y == +1i);
 y_sum3 = (y == 1);
 y_sum4 = (y == -1);
 % sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_total = y_sum1*1 + y_sum2*4 + y_sum3*3 + y_sum4 * 2;
+y_total = y_sum1*4 + y_sum2*1 + y_sum3*3 + y_sum4 * 2;
 
 x_sum2 = (complex == 1 + 1i);
 x_sum1 = (complex == 1 - 1i);
@@ -122,6 +120,38 @@ x_total = x_sum1*1 + x_sum2*2 + x_sum3*3 + x_sum4*4;
 
 diffTest = (y_total((symbol_period/2):symbol_period:end) == x_total((symbol_period/2):symbol_period:end));
 accuracy = sum(diffTest/length(diffTest))
+
+%Change the Rx basd on the values:
+final = y_total((symbol_period/2):symbol_period:end);
+for x = 1:length(final)
+   if final(x) == 4
+       final(x) = (-1 + 1i);
+   elseif final(x) == 1
+       final(x) = (1 + 1i);
+   elseif final(x) == 3
+       final(x) = (-1 - 1i);
+   elseif final(x) == 2
+       final(x) = (1 - 1i);
+   else
+       final(x) = 0;
+   end
+end
+final = final(1:(size(final)-1));
+
+
+temp_sum = sum(final==0);
+
+temp_fin = zeros((length(final) - temp_sum-1)*2, 1);
+curr_loc = 1;
+for x = 1:1:length(final)
+   if x ~= 0
+       temp_fin(curr_loc) = real(final(x));
+       temp_fin(curr_loc+1) = imag(final(x));
+       curr_loc = curr_loc + 2;
+   end
+end
+
+final = temp_fin;
 
 % Every 20 to measure in the middle of a pulse 
 %Send small noise-like data
