@@ -6,9 +6,10 @@ N = 10000;
 % bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
 word = 'hello';
 book = fileread('householdtales.txt');
+book = book(8500:10840);
 % bits = dec2bin(word', 7) - '0'
 % bits = reshape(bits, [35 , 1])
-message = str2bin(book(8500:10840))-0.5;
+message = str2bin(word)-0.5;
 bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end));
 
 Symbol_period = 20;
@@ -64,7 +65,7 @@ tmp(1:2:end) = real(x_tx);
 tmp(2:2:end) = imag(x_tx);
 
 % open a file to write in binary format 
-f1 = fopen('txbook.dat', 'wb');
+f1 = fopen('txhello.dat', 'wb');
 % write the values as a float32
 fwrite(f1, tmp/100, 'float32');
 % close the file

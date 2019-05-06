@@ -3,7 +3,7 @@
 clear;
 clf;
 % Open the file containing the received samples
-f2 = fopen('rxq.dat', 'rb');
+f2 = fopen('rxhello.dat', 'rb');
 % read data from the file
 rxfile = fread(f2, 'float32');
 % close the file
@@ -15,7 +15,7 @@ y = rxfile(1:2:end)+1i*rxfile(2:2:end);
 y = y(250:end);
 
 %open file and assign real/imag parts
-f1 = fopen('txq.dat', 'rb');
+f1 = fopen('txhello.dat', 'rb');
 txfile = fread(f1, 'float32');
 fclose(f1);
 txfile = txfile*100;
@@ -123,12 +123,12 @@ y_sum2 = (y == +1i);
 y_sum3 = (y == 1);
 y_sum4 = (y == -1);
 % sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_total = y_sum1*4 + y_sum2*1 + y_sum3*3 + y_sum4 * 2;
+y_total = y_sum1*3 + y_sum2*2 + y_sum3*1 + y_sum4 * 4;
 
-x_sum2 = (complex == 1 + 1i);
-x_sum1 = (complex == 1 - 1i);
-x_sum3 = (complex == -1 - 1i);
-x_sum4 = (complex == -1 + 1i);
+x_sum2 = (round(complex) == 1 + 1i);
+x_sum1 = (round(complex) == 1 - 1i);
+x_sum3 = (round(complex) == -1 - 1i);
+x_sum4 = (round(complex) == -1 + 1i);
 x_total = x_sum1*1 + x_sum2*2 + x_sum3*3 + x_sum4*4;
 
 diffTest = (y_total((symbol_period/2):symbol_period:end) == x_total((symbol_period/2):symbol_period:end));
@@ -179,7 +179,7 @@ maxreal = max(abs(tempreal));
 maximag = max(tempimag);
 start_constant = 0; % 200000;
 end_constant = 0; %200000;
-start = -1;
+start = 1;
 runningsum = zeros(1, 500);
 for z = 1:2:length(y)
     runningsum(mod((z-1)/2, 500) + 1) = abs(y(z));
