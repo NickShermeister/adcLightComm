@@ -38,7 +38,12 @@ y = y./magnitude_estimate;
 
 %Trim down the data to the relevent section
 y = movingAvg(y);
-% y = crossCorr(y, constant_bits);
+y = crossCorr(y, constant_bits);
+
+%Supposed to be able to normalize the values.
+magnitude_estimate = rms(abs(y));
+y = y./magnitude_estimate;
+
 
 %Hard set: change the tx data based on the known constants in the file
 %making the tx data.
@@ -53,6 +58,7 @@ ximag = ximag(100000:(length(ximag)-100000));
 
 %Plot the received and transmitted data
 subplot(3,2,1);
+
 stem(real(y(1:2:end)));
 title('Real portion of received Data');
 ylabel('realy');
@@ -78,6 +84,7 @@ y = y./temp_max;
 %Divide the data in half because of the noisiness and because the clocks
 %will drift over time.
 y1 = y(1:round(length(y)/2));
+y1 = y;
 y2 = y(round(length(y)/2):end);
 
 fastforT1 = abs(fft(y1.^4));
@@ -85,6 +92,7 @@ x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why 
 [max_val1, max_index1] = max(fastforT1);
 freq_offset1 = -1*x_axis1(max_index1)./4; %Why divided by 2? ( Prob because we raised to two -Paige)
 theta_hat1 = -1*angle(fastforT1(max_index1))./4; %still 2
+theta_hat1 = theta_hat1 + pi/4;
 
 for k = 1:length(y1)
    x_hat1(k) = y1(k).*exp(1i*(freq_offset1 * (k-1) + theta_hat1)); 
@@ -93,6 +101,7 @@ end
 subplot(3, 2, 5);
 plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
 title('half1');
+axis square
 
 
 subplot(3,2,6);
@@ -111,7 +120,9 @@ end
 
 plot(x_hat2(round(symbol_period/2) + mod(length(y1), symbol_period):symbol_period:end), '.') %Probably clipping, need to check amplitude
 title('half2');
+axis square
 
+y = x_hat1';
 y = round(y);
 
 %Trim off zeros at the front and set y's length equal to the sent data's
@@ -122,7 +133,8 @@ while(y(test_loc) == 0)
 end
 %TODO: fix to make it actually the length of ximag
 y = y((test_loc):(length(ximag) + test_loc ));
-complex = (1i*ximag + xreal)/50;
+complex = (1i*ximag + xreal);
+complex = complex(2:end);
 
 
 %HAND TUNE THESE
@@ -130,8 +142,12 @@ y_sum1 = (y == -1i);
 y_sum2 = (y == +1i);
 y_sum3 = (y == 1);
 y_sum4 = (y == -1);
+% y_sum1 = (y == 1 -1i);
+% y_sum2 = (y == 1 +1i);
+% y_sum3 = (y == -1 -1i);
+% y_sum4 = (y == -1 + 1i);
 % sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_total = y_sum1*3 + y_sum2*2 + y_sum3*1 + y_sum4 * 4;
+y_total = y_sum1*2 + y_sum2*4 + y_sum3*3 + y_sum4 * 1;
 
 x_sum2 = (round(complex) == 1 + 1i);
 x_sum1 = (round(complex) == 1 - 1i);
@@ -188,7 +204,7 @@ maximag = max(tempimag);
 start_constant = 0; % 200000;
 end_constant = 0; %200000;
 start = 1;
-runningsum = zeros(1, 500);
+runningsum = zeros(1, 1000);
 for z = 1:2:length(y)
     runningsum(mod((z-1)/2, 500) + 1) = abs(y(z));
     if (sum(runningsum)/length(runningsum)) > maxreal*3
@@ -199,7 +215,7 @@ end
 
 ends = length(y) - end_constant;
 runningsum = zeros(1, 100);
-for z = length(y):-2:150
+for z = length(y):-2:(length(runningsum)+2)
 %     abs(y(z))
     runningsum(mod(round((z-1)/2), 100) + 1) = abs(y(z));
     if (sum(runningsum)/length(runningsum)) > maxreal*3

@@ -16,7 +16,7 @@ book = book(8500:10840);
 % bits = reshape(bits, [35 , 1])
 message = str2bin(word)-0.5;
 bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end));
-bits = [constant_bits' bits];
+% bits = [constant_bits' bits];
 Symbol_period = 20;
 
 % create a generic pulse of unit height
