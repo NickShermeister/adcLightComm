@@ -1,6 +1,11 @@
 % tx_samples_from_file --freq 250e3 --rate 200e3 --type float --gain 70 --file tx2.dat
 %Lower receiver gain to like 20.
 
+fileName = "constant_noise.mat";
+if ~isfile(fileName)
+    run("make_constant_noise.m");
+end
+load(fileName);
 N = 10000;
 % make 100 random bits of values +- 1
 % bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
@@ -10,7 +15,7 @@ book = fileread('householdtales.txt');
 % bits = reshape(bits, [35 , 1])
 message = str2bin(book(8500:10840))-0.5;
 bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end));
-
+bits = [constant_bits' bits];
 Symbol_period = 20;
 
 % create a generic pulse of unit height

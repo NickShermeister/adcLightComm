@@ -2,6 +2,13 @@
 
 clear;
 clf;
+fileName = "constant_noise.mat";
+if ~isfile(fileName)
+    run("make_constant_noise.m");
+end
+load(fileName);
+constant_bits = constant_bits';
+
 % Open the file containing the received samples
 f2 = fopen('rxq.dat', 'rb');
 % read data from the file
@@ -32,6 +39,7 @@ y = y./magnitude_estimate;
 
 %Trim down the data to the relevent section
 y = movingAvg(y);
+% y = crossCorr(y, constant_bits);
 
 %Hard set: change the tx data based on the known constants in the file
 %making the tx data.
@@ -201,4 +209,12 @@ for z = length(y):-2:150
 end
 
 z = y((start - start_constant):(ends+ end_constant));
+end
+
+function z = crossCorr(y, bitsIn)
+   C = xcorr(y, bitsIn, 500);
+   C = C/max(C);
+   [maxval, maxindex] = max(C);
+   
+   z = y(maxindex:end);
 end
