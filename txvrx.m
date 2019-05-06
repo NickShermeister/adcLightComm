@@ -2,12 +2,15 @@
 
 clear;
 clf;
-fileName = "constant_noise.mat";
-if ~isfile(fileName)
-    run("make_constant_noise.m");
-end
-load(fileName);
-constant_bits = constant_bits';
+
+N = 1000;
+% make N random bits of values +- 1
+seed = 562019;
+rng(seed);
+constant_bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
+
+%Set the symbol period
+symbol_period = 20;
 
 % Open the file containing the received samples
 f2 = fopen('rxhello.dat', 'rb');
@@ -29,11 +32,7 @@ txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
 
-
-
-%Set the symbol period
-symbol_period = 20;
-
+%Supposed to be able to normalize the values.
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
 
@@ -49,8 +48,8 @@ ximag = ximag(100000:(length(ximag)-100000));
 % take FFT of square?
 % negative offset of radians?
 
-trial = xcorr(real(y), xreal);
-max(trial)
+% trial = xcorr(real(y), xreal);
+% max(trial)
 
 %Plot the received and transmitted data
 subplot(3,2,1);
@@ -121,7 +120,8 @@ test_loc = 1;
 while(y(test_loc) == 0)
    test_loc = test_loc + 1;
 end
-y = y((test_loc-1):(length(ximag) + test_loc + 1));
+%TODO: fix to make it actually the length of ximag
+y = y((test_loc):(length(ximag) + test_loc ));
 complex = (1i*ximag + xreal)/50;
 
 
@@ -212,9 +212,9 @@ z = y((start - start_constant):(ends+ end_constant));
 end
 
 function z = crossCorr(y, bitsIn)
-   C = xcorr(y, bitsIn, 500);
+   C = xcorr(y, bitsIn, 200);
    C = C/max(C);
-   [maxval, maxindex] = max(C);
+   [maxval, maxindex] = max(C)
    
    z = y(maxindex:end);
 end

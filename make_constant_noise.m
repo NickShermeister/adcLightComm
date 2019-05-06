@@ -3,10 +3,6 @@
 clear;
 
 fileName = 'constant_noise.mat';
-if isfile(fileName)
-    fprintf("File exists already.");
-    return;
-end
 
 N = 1000;
 % make N random bits of values +- 1
