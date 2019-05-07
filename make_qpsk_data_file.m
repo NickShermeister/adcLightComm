@@ -52,7 +52,7 @@ hold off
 % zero pad the beginning with 100000 samples to ensure that any glitch that
 % happens when we start transmitting doesn't effect the data
 
-x_tx = [zeros(100000, 1); x_tx;zeros(100000, 1)];
+x_tx = [zeros(100000, 1); x_tx(1:end-19);zeros(100000, 1)];
 
 
 % here we write the data into a format that the USRP can understand
