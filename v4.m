@@ -97,12 +97,6 @@ end
 
 down_x = downsample(x_hat(10:end), 20);
 plot(real(down_x), imag(down_x), 'o');
-% figure(4)
-% clf(4)
-% hold on
-% plot(x_axis,abs(fft_x))
-% axis square
-% hold off
 
 y = down_x;
 y = y(22:end);
@@ -118,26 +112,17 @@ end
 y = y((test_loc):(length(xreal)/20 + test_loc));
 
 complex = (1i*ximag + xreal);
+subplot(3,2,5);
+plot(real(complex), imag(complex), 'o');
 
 % y = y(2:end); %hand-done right now; CHANGE
 % HAND_SET_START = 45;
 % y = y(HAND_SET_START:end); %hand-done right now; CHANGE
 y = y(1:(length(y)-1));
 
-%HAND TUNE THESE
-% y_sum1 = (0 < real(y));
-% y_sum2 = (0 > real(y));
-% y_sum3 = (0 < imag(y));
-% y_sum4 = (0 > imag(y));
-% y_total1 = y_sum1*1 + y_sum2*2;
-% y_total2 = y_sum3*1 + y_sum4 * 2;
 
 complex = complex(10:20:end);
-% complex = complex(1:(length(y)));
-% x_sum1 = (0 < real(complex));
-% x_sum2 = (0 > real(complex));
-% x_sum3 = (0 < imag(complex));
-% x_sum4 = (0 > imag(complex));
+
 
 x = complex; %(1:1020); 
 
