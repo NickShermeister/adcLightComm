@@ -197,7 +197,7 @@ end
 
 final = temp_fin;
 
-
+words = translate(final)
 % Every 20 to measure in the middle of a pulse 
 %Send small noise-like data
 %Recive it
@@ -242,3 +242,4 @@ function z = crossCorr(y, bitsIn)
    
    z = y(maxindex:end);
 end
+
