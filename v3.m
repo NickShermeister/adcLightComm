@@ -9,6 +9,7 @@ N = 1000;
 seed = 562019;
 rng(seed);
 constant_bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
+constant_bits = constant_bits(1:100);
 
 %Set the symbol period
 symbol_period = 20;
@@ -36,7 +37,7 @@ ximag = txfile(2:2:end);
 
 %Trim down the data to the relevent section
 y = movingAvg(y);
-y = crossCorr(y, constant_bits);
+% y = crossCorr(y, constant_bits, symbol_period);
 
 %Supposed to be able to normalize the values.
 magnitude_estimate = rms(abs(y));
@@ -81,7 +82,7 @@ x_axis = linspace(0, 2*pi*(length(y)-1)/length(y), length(y));
 
 freq_offset = -1*x_axis(max_index)./4;
 
-theta_hat = -1*angle(fft_x(max_index))./4 + 5*pi/4;
+theta_hat = -1*angle(fft_x(max_index))./4 + 1*pi/4;
 
 for k = 1:length(y)
     x_hat(k) = y(k).*exp(1i*(freq_offset * (k-1) + theta_hat ));
@@ -101,10 +102,11 @@ while(y(test_loc) == 0)
    test_loc = test_loc + 1;
 end
 %TODO: fix to make it actually the length of ximag
-y = y((test_loc):(length(ximag)/20 + test_loc-2 ));
+y = y((test_loc):(length(ximag)/20 + test_loc ));
 complex = (1i*ximag + xreal);
 complex = complex(2:end);
 
+y = y(45:end); %hand-done right now; CHANGE
 
 %HAND TUNE THESE
 y_sum1 = (0 < real(y));
@@ -115,12 +117,13 @@ y_total1 = y_sum1*1 + y_sum2*2;
 y_total2 = y_sum3*1 + y_sum4 * 2;
 
 complex = complex(10:20:end);
+complex = complex(1:(length(y)));
 x_sum1 = (0 < real(complex));
 x_sum2 = (0 > real(complex));
 x_sum3 = (0 < imag(complex));
 x_sum4 = (0 > imag(complex));
 
-x = complex(1:1020); 
+x = complex; %(1:1020); 
 
 y_real = sign(real(y));
 y_imag = sign(imag(y));
@@ -131,46 +134,6 @@ wrong_real = (y_real ~= x_real);
 wrong_imag = (y_imag ~= x_imag); 
 total_wrong = sum(wrong_real) + sum(wrong_imag);
 bit_error = total_wrong/(length(wrong_real) + length(wrong_imag))
-% x_total1 = x_sum1*1 + x_sum2*2;
-% x_total2 = x_sum3*1 + x_sum4*2;
-% 
-% diffTest1 = (y_total1((symbol_period/2):symbol_period:end) == x_total1((symbol_period/2):symbol_period:end));
-% diffTest2 = (y_total2((symbol_period/2):symbol_period:end) == x_total2((symbol_period/2):symbol_period:end));
-% 
-% accuracy1 = sum(diffTest1/length(diffTest1))
-% accuracy2 = sum(diffTest2/length(diffTest2))
-
-%Change the Rx basd on the values:
-% final = y_total((symbol_period/2):symbol_period:end);
-% for x = 1:length(final)
-%    if final(x) == 4
-%        final(x) = (-1 + 1i);
-%    elseif final(x) == 1
-%        final(x) = (1 + 1i);
-%    elseif final(x) == 3
-%        final(x) = (-1 - 1i);
-%    elseif final(x) == 2
-%        final(x) = (1 - 1i);
-%    else
-%        final(x) = 0;
-%    end
-% end
-% final = final(1:(size(final)-1));
-% 
-% 
-% temp_sum = sum(final==0);
-% 
-% temp_fin = zeros((length(final) - temp_sum-1)*2, 1);
-% curr_loc = 1;
-% for x = 1:1:length(final)
-%    if x ~= 0
-%        temp_fin(curr_loc) = real(final(x));
-%        temp_fin(curr_loc+1) = imag(final(x));
-%        curr_loc = curr_loc + 2;
-%    end
-% end
-
-% final = temp_fin;
 
 
 % Every 20 to measure in the middle of a pulse 
@@ -210,10 +173,22 @@ end
 z = y((start - start_constant):(ends+ end_constant));
 end
 
-function z = crossCorr(y, bitsIn)
-   C = xcorr(y, bitsIn, 200);
+function z = crossCorr(y, bitsIn, symbol_period)
+
+pulse = ones(symbol_period, 1);
+
+% spread out the values in "bits" by Symbol_period
+% first create a vector to store the values
+x = zeros(symbol_period*length(bitsIn),1);
+
+% assign every Symbol_period-th sample to equal a value from bits
+x(1:symbol_period:end) = bitsIn;
+x_tx = conv(pulse, x);
+
+   [C, lags] = xcorr(y, x_tx);
    C = C/max(C);
    [maxval, maxindex] = max(C)
-   
-   z = y(maxindex:end);
+   subplot(3,2,5);
+   plot(abs(C))
+   z = y((maxindex):end);
 end
