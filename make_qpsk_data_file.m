@@ -3,7 +3,7 @@
 
 fileName = "constant_noise.mat";
 % if ~isfile(fileName)
-run("make_constant_noise.m");
+run('make_constant_noise.m');
 % end
 
 load(fileName);
@@ -16,8 +16,8 @@ book = book(8500:10840);
 % bits = dec2bin(word', 7) - '0'
 % bits = reshape(bits, [35 , 1])
 message = str2bin(word)-0.5;
-bits = sign(message(1:2:end)) + 1i*sign(message(2:2:end));
-% bits = [constant_bits' bits];
+bits = sign(message(1:2:end)) - 1i*sign(message(2:2:end));
+bits = [constant_bits' bits];
 Symbol_period = 20;
 
 % create a generic pulse of unit height
@@ -33,6 +33,7 @@ x(1:Symbol_period:end) = bits;
 
 % now convolve the single generic pulse with the spread-out bits
 x_tx = conv(pulse, x);
+x_tx = x_tx(1:end-19);
 
 % to visualize, make a stem plot
 figure(1)

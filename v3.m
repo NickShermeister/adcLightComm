@@ -8,8 +8,9 @@ N = 1000;
 % make N random bits of values +- 1
 seed = 562019;
 rng(seed);
-constant_bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
-constant_bits = constant_bits(1:100);
+a = sign(randn(N,1));
+constant_bits = a - 1i*a;
+% constant_bits = constant_bits(1:100);
 
 %Set the symbol period
 symbol_period = 20;
@@ -24,7 +25,7 @@ fclose(f2);
 
 %Assign y to be the data, ignoring the first 250 values due to weird noise.
 y = zeros(length(rxfile)/2,1);
-y = rxfile(1:2:end)+1i*rxfile(2:2:end);
+y = rxfile(1:2:end) - 1i*rxfile(2:2:end);
 y = y(250:end);
 
 %open file and assign real/imag parts
@@ -34,6 +35,7 @@ fclose(f1);
 txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
+
 
 %Trim down the data to the relevent section
 y = movingAvg(y);
@@ -45,8 +47,11 @@ y = y./magnitude_estimate;
 
 %Hard set: change the tx data based on the known constants in the file
 %making the tx data.
+
+
 xreal = xreal(100000:(length(xreal)-100000));
 ximag = ximag(100000:(length(ximag)-100000));
+
 
 %Plot the received and transmitted data
 subplot(3,2,1);
@@ -76,22 +81,28 @@ subplot(3,2,6)
 x_hat = zeros(length(y), 1);
 
 fft_x = fft(y.^4);
+% fft_x(1) = 0;
 x_axis = linspace(0, 2*pi*(length(y)-1)/length(y), length(y));
 
 [max_val, max_index] = max(abs(fft_x));
 
 freq_offset = -1*x_axis(max_index)./4;
 
-theta_hat = -1*angle(fft_x(max_index))./4 + 1*pi/4;
+theta_hat = -1*angle(fft_x(max_index))./4 + 7*pi/4;
 
 for k = 1:length(y)
     x_hat(k) = y(k).*exp(1i*(freq_offset * (k-1) + theta_hat ));
 end
 
-hold on
 
 down_x = downsample(x_hat(10:end), 20);
-plot(real(down_x), imag(down_x), 'o');
+% plot(real(down_x), imag(down_x), 'o');
+figure(4)
+clf(4)
+hold on
+plot(x_axis,abs(fft_x))
+% axis square
+hold off
 
 y = down_x;
 
@@ -102,11 +113,12 @@ while(y(test_loc) == 0)
    test_loc = test_loc + 1;
 end
 %TODO: fix to make it actually the length of ximag
-y = y((test_loc):(length(ximag)/20 + test_loc ));
+% y = y((test_loc):(length(ximag)/20 + test_loc ));
+% y = y(test_loc:end);
 complex = (1i*ximag + xreal);
 complex = complex(2:end);
 
-y = y(45:end); %hand-done right now; CHANGE
+y = y(2:end); %hand-done right now; CHANGE
 
 %HAND TUNE THESE
 y_sum1 = (0 < real(y));
@@ -150,7 +162,7 @@ maximag = max(tempimag);
 start_constant = 0; % 200000;
 end_constant = 0; %200000;
 start = 1;
-runningsum = zeros(1, 1000);
+runningsum = zeros(1, 500);
 for z = 1:2:length(y)
     runningsum(mod((z-1)/2, 500) + 1) = abs(y(z));
     if (sum(runningsum)/length(runningsum)) > maxreal*3

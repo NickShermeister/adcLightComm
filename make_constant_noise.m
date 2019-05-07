@@ -9,7 +9,8 @@ N = 1000;
 % make N random bits of values +- 1
 seed = 562019;
 rng(seed);
-constant_bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
+a = sign(randn(N,1));
+constant_bits = a - 1i*a;
 
 
 % open a file to write in binary format 
