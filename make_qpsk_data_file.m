@@ -5,6 +5,7 @@ fileName = "constant_noise.mat";
 % if ~isfile(fileName)
 run("make_constant_noise.m");
 % end
+
 load(fileName);
 N = 10000;
 % make 100 random bits of values +- 1

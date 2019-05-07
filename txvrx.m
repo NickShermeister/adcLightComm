@@ -3,6 +3,7 @@
 clear;
 clf;
 
+
 N = 1000;
 % make N random bits of values +- 1
 seed = 562019;
@@ -11,6 +12,7 @@ constant_bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
 
 %Set the symbol period
 symbol_period = 20;
+
 
 % Open the file containing the received samples
 f2 = fopen('rxhello.dat', 'rb');
@@ -32,9 +34,11 @@ txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
 
+
 %Supposed to be able to normalize the values.
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
+
 
 %Trim down the data to the relevent section
 y = movingAvg(y);
@@ -44,6 +48,9 @@ y = crossCorr(y, constant_bits);
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
 
+
+magnitude_estimate = rms(abs(y))
+y = y./magnitude_estimate;
 
 %Hard set: change the tx data based on the known constants in the file
 %making the tx data.
@@ -189,6 +196,7 @@ for x = 1:1:length(final)
 end
 
 final = temp_fin;
+
 
 % Every 20 to measure in the middle of a pulse 
 %Send small noise-like data

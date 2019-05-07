@@ -4,6 +4,7 @@ clear;
 
 fileName = 'constant_noise.mat';
 
+
 N = 1000;
 % make N random bits of values +- 1
 seed = 562019;
