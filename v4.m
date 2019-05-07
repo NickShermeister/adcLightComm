@@ -17,7 +17,7 @@ symbol_period = 20;
 
 
 % Open the file containing the received samples
-f2 = fopen('rxhello.dat', 'rb');
+f2 = fopen('rxhell2.dat', 'rb');
 % read data from the file
 rxfile = fread(f2, 'float32');
 % close the file
@@ -105,6 +105,7 @@ plot(real(down_x), imag(down_x), 'o');
 % hold off
 
 y = down_x;
+y = y(22:end);
 
 %Trim off zeros at the front and set y's length equal to the sent data's
 %length (possibly a bad presumption, but it should align technically)
@@ -115,7 +116,7 @@ end
 
 %TODO: fix to make it actually the length of ximag
 y = y((test_loc):(length(xreal)/20 + test_loc));
-% y = y(test_loc:end);
+
 complex = (1i*ximag + xreal);
 
 % y = y(2:end); %hand-done right now; CHANGE
