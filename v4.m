@@ -17,7 +17,7 @@ symbol_period = 20;
 
 
 % Open the file containing the received samples
-f2 = fopen('txhello.dat', 'rb');
+f2 = fopen('rxhello.dat', 'rb');
 % read data from the file
 rxfile = fread(f2, 'float32');
 % close the file
@@ -81,7 +81,7 @@ subplot(3,2,6)
 x_hat = zeros(length(y), 1);
 
 fft_x = fft(y.^4);
-fft_x(1) = 0;
+% fft_x(1) = 0;
 x_axis = linspace(0, 2*pi*(length(y)-1)/length(y), length(y));
 
 [max_val, max_index] = max(abs(fft_x));
@@ -124,19 +124,19 @@ complex = (1i*ximag + xreal);
 y = y(1:(length(y)-1));
 
 %HAND TUNE THESE
-y_sum1 = (0 < real(y));
-y_sum2 = (0 > real(y));
-y_sum3 = (0 < imag(y));
-y_sum4 = (0 > imag(y));
-y_total1 = y_sum1*1 + y_sum2*2;
-y_total2 = y_sum3*1 + y_sum4 * 2;
+% y_sum1 = (0 < real(y));
+% y_sum2 = (0 > real(y));
+% y_sum3 = (0 < imag(y));
+% y_sum4 = (0 > imag(y));
+% y_total1 = y_sum1*1 + y_sum2*2;
+% y_total2 = y_sum3*1 + y_sum4 * 2;
 
 complex = complex(10:20:end);
-complex = complex(1:(length(y)));
-x_sum1 = (0 < real(complex));
-x_sum2 = (0 > real(complex));
-x_sum3 = (0 < imag(complex));
-x_sum4 = (0 > imag(complex));
+% complex = complex(1:(length(y)));
+% x_sum1 = (0 < real(complex));
+% x_sum2 = (0 > real(complex));
+% x_sum3 = (0 < imag(complex));
+% x_sum4 = (0 > imag(complex));
 
 x = complex; %(1:1020); 
 
