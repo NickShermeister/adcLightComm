@@ -44,9 +44,11 @@ y = y./magnitude_estimate;
 y = movingAvg(y);
 y = crossCorr(y, constant_bits);
 
+
 %Supposed to be able to normalize the values.
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
+
 
 
 magnitude_estimate = rms(abs(y))
@@ -91,29 +93,45 @@ y = y./temp_max;
 %Divide the data in half because of the noisiness and because the clocks
 %will drift over time.
 y1 = y(1:round(length(y)/2));
-y1 = y;
-y2 = y(round(length(y)/2):end);
+y2 = y(round(length(y)/2)+1:end);
 
-fastforT1 = abs(fft(y1.^4));
-x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why we want this.
+
+
+fastforT1 = fftshift((fft(y1.^4)));
+% x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why we want this.
+x_axis1 = linspace(-pi,pi-2/length(y1)*pi, length(y1)) + pi/length(y1)*mod(length(y1),2);
 [max_val1, max_index1] = max(fastforT1);
 freq_offset1 = -1*x_axis1(max_index1)./4; %Why divided by 2? ( Prob because we raised to two -Paige)
 theta_hat1 = -1*angle(fastforT1(max_index1))./4; %still 2
 theta_hat1 = theta_hat1 + pi/4;
 
+figure(1)
+clf(1)
+hold on
+plot(x_axis1,abs(fastforT1/length(y1)))
+% plot(y1)
+hold off
+
 for k = 1:length(y1)
    x_hat1(k) = y1(k).*exp(1i*(freq_offset1 * (k-1) + theta_hat1)); 
 end
 
+figure(2)
+clf(2)
+
 subplot(3, 2, 5);
+hold on
 plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
 title('half1');
 axis square
+hold off
 
 
 subplot(3,2,6);
+hold on
 fastforT2 = abs(fft(y2.^4));
 x_axis2 = linspace(0, 2*pi*(length(y2)-1)/length(y2), length(y2)); %Unclear why we want this.
+hold off
 
 [max_val2, max_index2] = max(fastforT2);
 
