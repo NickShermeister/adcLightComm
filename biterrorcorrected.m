@@ -34,12 +34,6 @@ txfile = txfile*100;
 xreal = txfile(1:2:end);
 ximag = txfile(2:2:end);
 
-
-%Supposed to be able to normalize the values.
-magnitude_estimate = rms(abs(y));
-y = y./magnitude_estimate;
-
-
 %Trim down the data to the relevent section
 y = movingAvg(y);
 y = crossCorr(y, constant_bits);
@@ -48,20 +42,10 @@ y = crossCorr(y, constant_bits);
 magnitude_estimate = rms(abs(y));
 y = y./magnitude_estimate;
 
-
-magnitude_estimate = rms(abs(y))
-y = y./magnitude_estimate;
-
 %Hard set: change the tx data based on the known constants in the file
 %making the tx data.
 xreal = xreal(100000:(length(xreal)-100000));
 ximag = ximag(100000:(length(ximag)-100000));
-
-% take FFT of square?
-% negative offset of radians?
-
-% trial = xcorr(real(y), xreal);
-% max(trial)
 
 %Plot the received and transmitted data
 subplot(3,2,1);
@@ -82,11 +66,9 @@ subplot(3, 2, 4);
 stem((ximag));
 title('Imaginary portion of transmitted Data');
 
-
-
-%normalize y
-temp_max = max(abs(y));
-y = y./temp_max;
+% %normalize y
+% temp_max = max(abs(y));
+% y = y./temp_max;
 
 %Divide the data in half because of the noisiness and because the clocks
 %will drift over time.
@@ -95,18 +77,32 @@ y1 = y;
 y2 = y(round(length(y)/2):end);
 
 fastforT1 = abs(fft(y1.^4));
+fastforT1(1) = 0;
 x_axis1 = linspace(0, 2*pi*(length(y1)-1)/length(y1), length(y1)); %Unclear why we want this.
 [max_val1, max_index1] = max(fastforT1);
 freq_offset1 = -1*x_axis1(max_index1)./4; %Why divided by 2? ( Prob because we raised to two -Paige)
 theta_hat1 = -1*angle(fastforT1(max_index1))./4; %still 2
-theta_hat1 = theta_hat1 + pi/4;
+% theta_hat1 = theta_hat1 + 1*pi/4;
 
 for k = 1:length(y1)
    x_hat1(k) = y1(k).*exp(1i*(freq_offset1 * (k-1) + theta_hat1)); 
+%    x_hat1(k) = y1(k).*exp(1i*(theta_hat1)); 
+
 end
 
 subplot(3, 2, 5);
-plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
+% x_hat1 = y;
+
+f1 = fopen('paige.dat', 'wb');
+% write the values as a float32
+
+fwrite(f1, x_hat1, 'float32');
+% close the file
+fclose(f1);
+
+down_x = downsample(x_hat1(10:end), 20);
+% plot(x_hat1(round(symbol_period/2):symbol_period:end), '.') %Probably clipping, need to check amplitude
+plot(real(down_x), imag(down_x), '.');
 title('half1');
 axis square
 
@@ -129,7 +125,7 @@ plot(x_hat2(round(symbol_period/2) + mod(length(y1), symbol_period):symbol_perio
 title('half2');
 axis square
 
-y = x_hat1';
+% y = x_hat1';
 % y = round(y);
 
 %Trim off zeros at the front and set y's length equal to the sent data's
@@ -139,67 +135,63 @@ while(y(test_loc) == 0)
    test_loc = test_loc + 1;
 end
 %TODO: fix to make it actually the length of ximag
-y = y((test_loc):(length(ximag) + test_loc ));
+y = y((test_loc):(length(ximag) + test_loc-2 ));
 complex = (1i*ximag + xreal);
 complex = complex(2:end);
 
 
 %HAND TUNE THESE
-% y_sum1 = (y == -1i);
-% y_sum2 = (y == +1i);
-% y_sum3 = (y == 1);
-% y_sum4 = (y == -1);
-% y_sum1 = (y == 1 -1i);
-% y_sum2 = (y == 1 +1i);
-% y_sum3 = (y == -1 -1i);
-% y_sum4 = (y == -1 + 1i);
-% sum(y_sum1 + y_sum2 + y_sum3 + y_sum4)
-y_sum1 = (0 <= real(y)) && (0 <= imag(y));
-y_sum2 = (0 <= y(real)) && (0 >= y(imag));
-y_sum3 = (0 >= y(real)) && (0 >= y(imag));
-y_sum4 = (0 >= y(real)) && (0 <= y(imag));
-y_total = y_sum1*2 + y_sum2*4 + y_sum3*3 + y_sum4 * 1;
+y_sum1 = (0 < real(y));
+y_sum2 = (0 > real(y));
+y_sum3 = (0 < imag(y));
+y_sum4 = (0 > imag(y));
+y_total1 = y_sum1*1 + y_sum2*2;
+y_total2 = y_sum3*1 + y_sum4 * 2;
 
-x_sum2 = (round(complex) == 1 + 1i);
-x_sum1 = (round(complex) == 1 - 1i);
-x_sum3 = (round(complex) == -1 - 1i);
-x_sum4 = (round(complex) == -1 + 1i);
-x_total = x_sum1*1 + x_sum2*2 + x_sum3*3 + x_sum4*4;
+x_sum1 = (0 < real(complex));
+x_sum2 = (0 > real(complex));
+x_sum3 = (0 < imag(complex));
+x_sum4 = (0 > imag(complex));
+x_total1 = x_sum1*1 + x_sum2*2;
+x_total2 = x_sum3*1 + x_sum4*2;
 
-diffTest = (y_total((symbol_period/2):symbol_period:end) == x_total((symbol_period/2):symbol_period:end));
-accuracy = sum(diffTest/length(diffTest))
+diffTest1 = (y_total1((symbol_period/2):symbol_period:end) == x_total1((symbol_period/2):symbol_period:end));
+diffTest2 = (y_total2((symbol_period/2):symbol_period:end) == x_total2((symbol_period/2):symbol_period:end));
+
+accuracy1 = sum(diffTest1/length(diffTest1))
+accuracy2 = sum(diffTest2/length(diffTest2))
 
 %Change the Rx basd on the values:
-final = y_total((symbol_period/2):symbol_period:end);
-for x = 1:length(final)
-   if final(x) == 4
-       final(x) = (-1 + 1i);
-   elseif final(x) == 1
-       final(x) = (1 + 1i);
-   elseif final(x) == 3
-       final(x) = (-1 - 1i);
-   elseif final(x) == 2
-       final(x) = (1 - 1i);
-   else
-       final(x) = 0;
-   end
-end
-final = final(1:(size(final)-1));
+% final = y_total((symbol_period/2):symbol_period:end);
+% for x = 1:length(final)
+%    if final(x) == 4
+%        final(x) = (-1 + 1i);
+%    elseif final(x) == 1
+%        final(x) = (1 + 1i);
+%    elseif final(x) == 3
+%        final(x) = (-1 - 1i);
+%    elseif final(x) == 2
+%        final(x) = (1 - 1i);
+%    else
+%        final(x) = 0;
+%    end
+% end
+% final = final(1:(size(final)-1));
+% 
+% 
+% temp_sum = sum(final==0);
+% 
+% temp_fin = zeros((length(final) - temp_sum-1)*2, 1);
+% curr_loc = 1;
+% for x = 1:1:length(final)
+%    if x ~= 0
+%        temp_fin(curr_loc) = real(final(x));
+%        temp_fin(curr_loc+1) = imag(final(x));
+%        curr_loc = curr_loc + 2;
+%    end
+% end
 
-
-temp_sum = sum(final==0);
-
-temp_fin = zeros((length(final) - temp_sum-1)*2, 1);
-curr_loc = 1;
-for x = 1:1:length(final)
-   if x ~= 0
-       temp_fin(curr_loc) = real(final(x));
-       temp_fin(curr_loc+1) = imag(final(x));
-       curr_loc = curr_loc + 2;
-   end
-end
-
-final = temp_fin;
+% final = temp_fin;
 
 
 % Every 20 to measure in the middle of a pulse 
