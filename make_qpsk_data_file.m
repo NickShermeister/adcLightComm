@@ -1,23 +1,18 @@
 % tx_samples_from_file --freq 250e3 --rate 200e3 --type float --gain 70 --file tx2.dat
 %Lower receiver gain to like 20.
 
-fileName = "constant_noise.mat";
-% if ~isfile(fileName)
-run('make_constant_noise.m');
-% end
 
-load(fileName);
+% Create header noise
+seed = 562019;
+rng(seed);
+constant_noise = sign(randn(1000,1)) + 1i*sign(randn(1000,1));
+
+% Create randomly generated message signal, comment out if using txt file
+% to write
 N = 10000;
-% make 100 random bits of values +- 1
-% bits = sign(randn(N,1)) + 1i*sign(randn(N,1));
-word = 'hello';
-book = fileread('householdtales.txt');
-book = book(8500:10840);
-% bits = dec2bin(word', 7) - '0'
-% bits = reshape(bits, [35 , 1])
-message = str2bin(word)-0.5;
-bits = sign(message(1:2:end)) - 1i*sign(message(2:2:end));
-bits = [constant_bits' bits];
+signal = sign(randn(N,1)) + 1i*sign(randn(N,1));
+bits = [constant_noise; signal];
+
 Symbol_period = 20;
 
 % create a generic pulse of unit height
@@ -33,7 +28,7 @@ x(1:Symbol_period:end) = bits;
 
 % now convolve the single generic pulse with the spread-out bits
 x_tx = conv(pulse, x);
-x_tx = x_tx(1:end-19);
+x_tx = x_tx(1:end);
 
 % to visualize, make a stem plot
 figure(1)
@@ -72,7 +67,7 @@ tmp(1:2:end) = real(x_tx);
 tmp(2:2:end) = imag(x_tx);
 
 % open a file to write in binary format 
-f1 = fopen('txhello.dat', 'wb');
+f1 = fopen('txtest2.dat', 'wb');
 % write the values as a float32
 fwrite(f1, tmp/100, 'float32');
 % close the file
