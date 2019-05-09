@@ -29,6 +29,19 @@ rxfile = fread(f2, 'float32');
 % close the file
 fclose(f2);
 
+figure(8)
+clf(8)
+hold on
+plot(rxfile)
+ylim([-.3 .2])
+xlim([-0.1 3.5]*1e6)
+xlabel('Index')
+ylabel('Magnitude(V)')
+title('Raw Received Data')
+hold off
+
+
+
 %Assign y to be the data, ignoring the first 250 values due to glitching
 %from hardware
 y = zeros(length(rxfile)/2,1);
@@ -55,6 +68,8 @@ figure(1)
 clf(1)
 hold on
 plot(lags,abs(Ryx))
+xlabel('Time(s)')
+ylabel('Amplitude')
 hold off
 
 
@@ -116,6 +131,7 @@ figure(3)
 clf(3)
 hold on
 plot(x_axis,abs(fft_x))
+xlim([-1 6.5])
 xlabel('Frequency (rad/sample)')
 ylabel('Magnitude')
 hold off
@@ -189,6 +205,59 @@ ylabel('Magnitude(V)')
 title('Comparison of tx vs rx in sub section')
 ylim([-1.25 1.5])
 legend('Transmitted data','Received data *100')
+
+
+
+y_data_down = y_data(10:20:end)
+
+figure(6)
+clf(6)
+
+subplot(2,1,1)
+hold on
+plot(real(signal(600:650))/100)
+plot(real(y_data_down(600:650)))
+ylabel('Magnitude(V)')
+title('Before Correction')
+xlim([0 50])
+legend('Transmitted Data','Received Data')
+hold off
+
+subplot(2,1,2)
+hold on
+plot(real(signal(600:650)/100))
+plot(real(down_x(600:650)))
+xlim([0 50])
+xlabel('Index')
+title('After Correction')
+hold off
+
+suptitle('Real Compenents')
+
+
+figure(7)
+clf(7)
+subplot(2,1,1)
+hold on
+plot(imag(signal(600:650))/100)
+plot(imag(y_data_down(600:650)))
+ylabel('Magnitude(V)')
+title('Before Correction')
+xlim([0 50])
+legend('Transmitted Data','Received Data')
+hold off
+
+
+subplot(2,1,2)
+hold on
+plot(imag(signal(600:650)/100))
+plot(imag(down_x(600:650)))
+title('After Correction')
+xlim([0 50])
+xlabel('Index')
+hold off
+
+suptitle('Imaginary Compenents')
 
 
 
