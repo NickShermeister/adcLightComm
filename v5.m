@@ -144,6 +144,17 @@ down_x = downsample(x_hat(10:end), 20);
 down_x_real = sign(real(down_x));
 down_x_imag = sign(imag(down_x));
 
+%Interleave the values to make one long data vector
+message_vec = ones(2*length(down_x),1);
+message_vec(1:2:end) = down_x_real';
+message_vec(2:2:end) = down_x_imag';
+message_vec(find(message_vec == -1)) = 0;  % converting -1s to 0 to make binary
+
+bin2str(message_vec)
+
+
+
+
 % Constellation plot of corrected data
 figure(4)
 clf(4)
@@ -166,20 +177,6 @@ total_wrong = sum(wrong_real) + sum(wrong_imag);
 bit_error = total_wrong/(length(signal)*2)
 
 
-% figure(5)
-% clf(5)
-% 
-% subplot(2,1,1)
-% hold on
-% plot(signal_real(200:300),'.-')
-% ylim([-1.5 1.5])
-% hold off
-% 
-% subplot(2,1,2)
-% hold on
-% plot(real(down_x(200:300)),'.-')
-% ylim([-0.01 0.01])
-% hold off
 
 figure(5)
 clf(5)
