@@ -90,33 +90,37 @@ clf(2)
 subplot(2,2,1);
 hold on
 plot(real(y_data));
-title('Real portion of received Data');
+title('Real portion of received data');
 ylabel('Magnitude of real (V)')
+xlim([0 2e5])
 hold off
 
 subplot(2,2,2);
 hold on
 plot(imag(y_data));
-title('Imaginary portion of received Data');
+title('Imaginary portion of received data');
 xlabel('Index')
 ylabel('Magnitude of imag (V)')
+xlim([0 2e5])
 hold off
 
 subplot(2,2,3);
 hold on
-plot(real(signal));
-title('Real portion of transmitted Data');
+plot(real(x));
+title('Real portion of transmitted data');
 xlabel('Index')
-ylabel('Magnitude of imag (V)')
+ylabel('Magnitude of real (V)')
+xlim([0 2.1e5])
 ylim([-1.5 1.5])
 hold off
 
 subplot(2,2,4);
 hold on
-plot(imag(signal));
-title('Imaginary portion of transmitted Data');
+plot(imag(x));
+title('Imaginary portion of transmitted data');
 xlabel('Index')
 ylabel('Magnitude of imag (V)')
+xlim([0 2.1e5])
 ylim([-1.5 1.5])
 hold off
 
@@ -166,7 +170,7 @@ message_vec(1:2:end) = down_x_real';
 message_vec(2:2:end) = down_x_imag';
 message_vec(find(message_vec == -1)) = 0;  % converting -1s to 0 to make binary
 
-bin2str(message_vec)
+
 
 
 
@@ -174,12 +178,32 @@ bin2str(message_vec)
 % Constellation plot of corrected data
 figure(4)
 clf(4)
+
+subplot(1,2,1)
+hold on
+plot(real(y_data), imag(y_data), 'o');
+axh = gca; % use current axes
+line(get(axh,'XLim'), [0 0], 'Color', 'k', 'LineStyle', ':');
+line([0 0], get(axh,'YLim'), 'Color', 'k', 'LineStyle', ':');
+xlabel('Real','FontSize',16)
+ylabel('Imaginary','FontSize',16)
+title('Raw Data','FontSize',16)
+axis square
+hold off
+
+subplot(1,2,2)
 hold on
 plot(real(down_x), imag(down_x), 'o');
-xlabel('Real')
-ylabel('Imaginary')
-title('Frequency Offset Corrected Data Constellation')
+axh = gca; % use current axes
+line(get(axh,'XLim'), [0 0], 'Color', 'k', 'LineStyle', ':');
+line([0 0], get(axh,'YLim'), 'Color', 'k', 'LineStyle', ':');
+xlabel('Real','FontSize',16)
+ylabel('Imaginary','FontSize',16)
+title('Offset Corrected Data','FontSize',16)
+axis square
 hold off
+
+suptitle('Constellation Plots')
 
 % To check for accuracy, take our actual transmitted data and separate in
 % the same way 
